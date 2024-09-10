@@ -3,8 +3,8 @@
 A interview agent build with Flet and OpenAI Whisper.
 
 ![Screenshot](screenshot.png)
+<img src="screenshot.png" alt="Description" width="400">
 
-https://user-images.githubusercontent.com/69365652/205431746-1ece6d20-85a6-4112-ba5a-ee050b67268c.mp4
 
 ## Setting Up An Environment
 On Windows:
@@ -27,12 +27,15 @@ flet run main.py
 
 
 ## Usage
+* Upload Your CV and add Position you are applying too. 
 * Select an input source using the dropdown.
 * Click "Start Transcribing"
 
-You need to specify the device to which Agent will listen to for example if you have interview overt MS Teams select it as audio source so ONLY the questions asked by the Panel will be included. 
+You need to specify the device to which Agent will listen to for example if you have interview overt MS Teams select it as audio source so ONLY the questions asked by the Panel will be answered. 
 
 Application require Open AI API that you can get from their website here https://platform.openai.com/api-keys
+
+**Application only answers questions and ignore all other not relevant discussions. **
 
 You can also make the window transparent and set the text background, this is useful for overlaying on other apps. 
 
