@@ -2,8 +2,7 @@
 
 A interview agent build with Flet and OpenAI Whisper.
 
-![Screenshot](screenshot.png)
-<img src="screenshot.png" alt="Description" width="400">
+<img src="screenshot.png" alt="Description" width="600">
 
 
 ## Setting Up An Environment
@@ -35,7 +34,7 @@ You need to specify the device to which Agent will listen to for example if you 
 
 Application require Open AI API that you can get from their website here https://platform.openai.com/api-keys
 
-**Application only answers questions and ignore all other not relevant discussions. **
+**Application only answers questions and ignore all other not relevant discussions.**
 
 You can also make the window transparent and set the text background, this is useful for overlaying on other apps. 
 
