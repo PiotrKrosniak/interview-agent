@@ -86,18 +86,13 @@ def main(page: ft.Page):
     stream = None
     is_recording = False
     run_record_thread = False
-
+    
     # Load the API key from the configuration file
     OPENAI_API_KEY = load_api_key()
     client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
     # Settings and constants.
-    settings_file = "transcriber_settings.yaml"
-    transcription_file = "transcription.txt"
     max_energy = 5000
-    sample_rate = 16000
-    chunk_size = 1024
-
     currently_transcribing = False
     record_thread = None
     data_queue = Queue()
@@ -179,7 +174,7 @@ def main(page: ft.Page):
                 transcribe_button.bgcolor = ft.colors.RED_800
 
                 # Disable all the controls
-                for control in [api_key_input, microphone_dropdown, language_dropdown]:
+                for control in [api_key_input, microphone_dropdown]:
                     control.disabled = True
                 settings_controls.visible = False
 
@@ -217,15 +212,14 @@ def main(page: ft.Page):
                 volume_bar.value = 0.01
 
                 # Enable controls
-                for control in [api_key_input, microphone_dropdown, language_dropdown]:
+                for control in [api_key_input, microphone_dropdown]:
                     control.disabled = False
-                language_dropdown.value = 'en'
                 settings_controls.visible = True
 
                 # Make window opaque again
                 page.window.bgcolor = None
                 page.bgcolor = None
-                page.window.title_bar_hidden = True
+                page.window.title_bar_hidden = False
                 page.window.frameless = False
                 draggable_area1.visible = False
                 draggable_area2.visible = False
@@ -238,15 +232,14 @@ def main(page: ft.Page):
             logger.error(f"Error in transcribe_callback: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
             hide_splash(page)
-    
     def navigation_rail_change(e):
-        selected_index = e.control.selected_index
-        if selected_index == 1:
-            load_cv_page()
-        elif selected_index == 2:
-            load_about_page()
-        else:
-            load_main_page()
+            selected_index = e.control.selected_index
+            if selected_index == 1:
+                load_cv_page()
+            elif selected_index == 2:
+                load_about_page()
+            else:
+                load_main_page()
 
     def load_main_page():
         # Set the content for the main container
@@ -368,6 +361,10 @@ def main(page: ft.Page):
         chunk_buffer = b''
         chunk_start_time = time.time()
 
+        # Initialize run_record_thread
+        global run_record_thread
+        run_record_thread = True
+
         try:
             while run_record_thread and is_recording:
                 try:
@@ -458,11 +455,6 @@ def main(page: ft.Page):
         expand=True,
     )
 
-    language_dropdown = ft.Dropdown(
-        options=[ft.dropdown.Option("Auto")],
-        label="Language",
-        value="Auto",
-    )
     def always_on_top_callback(e):
             page.window.always_on_top = always_on_top_checkbox.value
             page.update()
@@ -590,7 +582,7 @@ def main(page: ft.Page):
         visible=False
     )
     # Toggle Navigation Rail
-    navigation_rail_expanded = True
+    navigation_rail_expanded = False
 
     def toggle_navigation_rail(e):
         nonlocal navigation_rail_expanded

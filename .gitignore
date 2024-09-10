@@ -3,10 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+config.json
+position_name.txt
+uploaded_cv_text.txt
+
 # C extensions
 *.so
 
 # Distribution / packaging
+.DS_Store
 .Python
 env/
 venv/
@@ -82,6 +87,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+.ipynb
 
 # IPython
 profile_default/
