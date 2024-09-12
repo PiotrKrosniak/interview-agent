@@ -14,6 +14,8 @@ import json
 from about import about_page
 from cvupload import cvupload_page
 
+import asyncio
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -49,6 +51,9 @@ audio_queue = Queue()
 is_recording = False
 p = pyaudio.PyAudio()
 stop_event = Event()  # Event to signal stopping the recording thread
+
+# Global list to store transcriptions
+transcriptions = []
 
 def start_recording():
     global is_recording
@@ -127,9 +132,21 @@ def main(page: ft.Page):
                 )
                 transcription_list.controls.append(text_control)
                 transcription_list.update()
+                
+                # Append transcription to the global list
+                transcriptions.append(transcription)
             except Empty:
                 pass
             sleep(0.1)
+
+    def save_transcriptions_to_file():
+        if transcriptions:
+            # Create a filename with the current date and time
+            filename = f"transcriptions_{time.strftime('%Y%m%d_%H%M%S')}.txt"
+            with open(filename, 'w') as f:
+                for transcription in transcriptions:
+                    f.write(transcription + "\n")
+            logger.info(f"Transcriptions saved to {filename}")
 
     def transcribe_callback(e):
         nonlocal currently_transcribing, record_thread
@@ -193,6 +210,9 @@ def main(page: ft.Page):
                     page.window.frameless = True
                     draggable_area1.visible = True
                     draggable_area2.visible = True
+                    navigation_container.visible = False  # Hide the navigation container
+                else:
+                    navigation_container.visible = True  # Show the navigation container
 
                 currently_transcribing = True
             else:
@@ -231,8 +251,12 @@ def main(page: ft.Page):
                 page.window.frameless = False
                 draggable_area1.visible = False
                 draggable_area2.visible = False
+                navigation_container.visible = True  # Show the navigation container
 
                 currently_transcribing = False
+
+                # Save transcriptions to file
+                save_transcriptions_to_file()
 
             hide_splash(page)
             logger.info("Transcription status changed")
@@ -240,6 +264,7 @@ def main(page: ft.Page):
             logger.error(f"Error in transcribe_callback: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
             hide_splash(page)
+
     def navigation_rail_change(e):
             selected_index = e.control.selected_index
             if selected_index == 1:
@@ -264,7 +289,7 @@ def main(page: ft.Page):
             ),
             draggable_area2,
             ft.Container(
-                content=transcription_list,
+                content=tabs,
                 padding=ft.padding.only(left=15, right=45, top=5),
                 expand=True,
             ),
@@ -362,6 +387,7 @@ def main(page: ft.Page):
             ],
             on_change=navigation_rail_change,
         )
+
     def recording_thread(stream):
         logger.info("Recording thread started")
         nonlocal max_energy
@@ -418,8 +444,51 @@ def main(page: ft.Page):
             logger.info(f"Recording thread stopped. Total samples processed: {sample_count}")
             stop_recording(stream)
 
+    def read_file_content(file_path):
+        try:
+            with open(file_path, 'r') as file:
+                return file.read().strip()
+        except Exception as e:
+            logger.error(f"Error reading file {file_path}: {e}")
+            return ""
+
+    def detect_question(text):
+        # Simple heuristic to detect questions
+        return "?" in text or any(q in text.lower() for q in ["what", "how", "why", "who", "which", "when"])
+
+    async def process_transcription_chunk(chunk, cv, position):
+        prompt = f"""
+        Here is the transcribed conversation: {chunk}
+        The user is applying for the position: {position}.
+        Their CV is as follows: {cv}.
+        Based on the conversation, detect any questions asked and provide answers using the CV and job position.
+        Only return the questions and the answers.
+        """
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a Interview questions answering assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            result = response.choices[0].message.content
+            return result
+
+        except Exception as e:
+            logger.error(f"Error in GPT request: {e}")
+            return None
+
     def api_thread():
         logger.info("API thread started")
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        # Read CV and position from text files
+        cv = read_file_content("uploaded_cv_text.txt")
+        position = read_file_content("position_name.txt")
+        
         while not stop_event.is_set():
             try:
                 filename = audio_queue.get(timeout=1)  # Wait for a chunk to be available
@@ -427,6 +496,20 @@ def main(page: ft.Page):
                 if transcription:
                     logger.info(f"Received transcription: {transcription}")
                     transcription_queue.put(transcription)
+                    
+                    # Detect questions and process transcription chunk
+                    if detect_question(transcription):
+                        answer = loop.run_until_complete(process_transcription_chunk(transcription, cv, position))
+                        if answer:
+                            answer_control = ft.Text(
+                                answer, 
+                                selectable=True, 
+                                size=24,
+                                bgcolor=ft.colors.BLACK if text_background_checkbox.value else None
+                            )
+                            answers_list.controls.append(answer_control)
+                            answers_list.update()
+                
                 audio_queue.task_done()
             except Empty:
                 continue
@@ -489,6 +572,15 @@ def main(page: ft.Page):
     volume_bar = ft.ProgressBar(value=0.01, color=ft.colors.RED_800)
 
     transcription_list = ft.ListView([], spacing=10, padding=20, expand=True, auto_scroll=True)
+    answers_list = ft.ListView([], spacing=10, padding=20, expand=True, auto_scroll=True)
+
+    tabs = ft.Tabs(
+        tabs=[
+            ft.Tab(text="Transcriptions", content=transcription_list),
+            ft.Tab(text="Answers", content=answers_list)
+        ],
+        expand=True
+    )
 
     transcribe_text = ft.Text("Start Transcribing")
     transcribe_icon = ft.Icon("play_arrow_rounded")
@@ -635,6 +727,7 @@ def main(page: ft.Page):
         ),
         width=200 if navigation_rail_expanded else 60,
         height=600,
+        visible=True  # Ensure it is initially visible
     )
 
     # Create main content container
@@ -654,6 +747,13 @@ def main(page: ft.Page):
 
     # Load the default page (main page)
     load_main_page()
+
+    def on_exit(e):
+        save_transcriptions_to_file()
+        logger.info("Application closed")
+        page.window.close()
+
+    page.window.on_close = on_exit
 
 if __name__ == "__main__":
     logger.info("Starting application")

@@ -10,6 +10,8 @@ uploaded_cv_text.txt
 transcriptions*.txt
 # C extensions
 *.so
+test.py
+main_old.py
 
 # Distribution / packaging
 .DS_Store
