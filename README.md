@@ -1,6 +1,7 @@
 # Interview - Agent 
 
 A interview agent build with Flet and OpenAI Whisper.
+[![YouTube](http://i.ytimg.com/vi/Cv_0TmJ9lv0/hqdefault.jpg)](https://www.youtube.com/watch?v=Cv_0TmJ9lv0)
 
 https://youtu.be/Cv_0TmJ9lv0
 
