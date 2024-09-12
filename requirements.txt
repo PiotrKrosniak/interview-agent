@@ -2,4 +2,4 @@ flet
 pyaudio
 numpy
 openai
-pypdf2
+pypdf

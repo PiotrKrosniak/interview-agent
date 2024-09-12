@@ -163,11 +163,6 @@ def main(page: ft.Page):
                         record_thread.start()
                         logger.info("Recording thread started")
 
-                        # Start API thread
-                        api_thread_instance = Thread(target=api_thread, daemon=True)
-                        api_thread_instance.start()
-                        logger.info("API thread started")
-
                         # Start transcription update loop in a separate thread
                         transcription_update_thread = Thread(target=update_transcription_loop, daemon=True)
                         transcription_update_thread.start()
@@ -395,9 +390,12 @@ def main(page: ft.Page):
                             wav.setframerate(RATE)
                             wav.writeframes(chunk_buffer)
 
-                        # Put the filename into the queue
-                        logger.info(f"Putting chunk of {CHUNK_DURATION} seconds into queue")
-                        audio_queue.put(filename)
+                        # Send to API
+                        logger.info(f"Sending chunk of {CHUNK_DURATION} seconds to API")
+                        transcription = send_audio_to_api(filename)
+                        if transcription:
+                            logger.info(f"Received transcription: {transcription}")
+                            transcription_queue.put(transcription)
 
                         # Reset for next chunk
                         chunk_buffer = b''
@@ -417,23 +415,6 @@ def main(page: ft.Page):
         finally:
             logger.info(f"Recording thread stopped. Total samples processed: {sample_count}")
             stop_recording(stream)
-
-    def api_thread():
-        logger.info("API thread started")
-        while not stop_event.is_set():
-            try:
-                filename = audio_queue.get(timeout=1)  # Wait for a chunk to be available
-                transcription = send_audio_to_api(filename)
-                if transcription:
-                    logger.info(f"Received transcription: {transcription}")
-                    transcription_queue.put(transcription)
-                audio_queue.task_done()
-            except Empty:
-                continue
-            except Exception as e:
-                logger.error(f"Error in API thread: {str(e)}")
-                logger.error(f"Traceback: {traceback.format_exc()}")
-        logger.info("API thread stopped")
 
     def send_audio_to_api(filename):
         logger.info("Sending audio data to OpenAI API")

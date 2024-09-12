@@ -1,5 +1,5 @@
 import flet as ft
-import PyPDF2
+import pypdf
 import os
 
 SAVE_FILE_PATH = "uploaded_cv_text.txt"  # Path to save the CV text content
@@ -33,7 +33,7 @@ def cvupload_page(page):
             uploaded_file_path.value = e.files[0].path
             # Read and display the content of the PDF file
             with open(uploaded_file_path.value, 'rb') as f:
-                reader = PyPDF2.PdfReader(f)
+                reader = pypdf.PdfReader(f)
                 text_content = ""
                 for page_num in range(len(reader.pages)):
                     text_content += reader.pages[page_num].extract_text()

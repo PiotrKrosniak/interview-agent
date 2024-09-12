@@ -9,7 +9,7 @@ A interview agent build with Flet and OpenAI Whisper.
 On Windows:
 ```
 cd transcriber_app
-py -3.7 -m venv venv
+py -3.9 -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 flet run main.py
@@ -18,12 +18,13 @@ On Unix:
 ```
 git clone https://github.com/PiotrKrosniak/interview-agent.git
 cd transcriber_app
-python3.7 -m venv venv
+python3.9 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 flet run main.py
 ```
 
+You also need to setup audio device using BlackHole https://existential.audio/blackhole/support/
 
 ## Usage
 * Upload Your CV and add Position you are applying too. 
@@ -44,4 +45,7 @@ Read more about Whisper here: https://github.com/openai/whisper
 
 Read more about Flet here: https://flet.dev/
 
-The code in this repository is public domain.
+Inspiration and parts of the code are implemented based on https://github.com/davabase/transcriber_app
+
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+
