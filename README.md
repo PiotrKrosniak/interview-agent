@@ -2,8 +2,29 @@
 
 A interview agent build with Flet and OpenAI Whisper.
 
-<img src="screenshot.png" alt="Description" width="600">
+[Watch the demo video](screen_recording.mov)
 
+This application is designed to transcribe audio input in real-time, detect questions within the transcriptions, and provide answers based on the user's CV and the job position they are applying for. The application leverages OpenAI's GPT-4o-mini model for generating responses and Whisper API for transcriptions.
+
+## Main Functionalities
+1. Real-Time Audio Transcription
+Audio Input Selection: Users can select their preferred audio input device from a dropdown menu.
+Energy Threshold Adjustment: An energy slider allows users to set the minimum energy level required to start decoding speech, helping to filter out background noise.
+Volume Bar: A visual representation of the current audio input energy level, which changes color based on the set threshold.
+2. Question Detection and Answering
+Question Detection: The application uses heuristic to detect questions within the transcribed text.
+Answer Generation: When a question is detected, the application sends the transcription chunk, along with the user's CV and job position, to OpenAI's GPT-4o-mini model to generate answers.
+Answer Display: Answers are displayed in a dedicated "Answers" tab, with optional background color based on user preference.
+3. User Interface
+Tabs for Transcriptions and Answers: The application features two main tabs:
+Transcriptions: Displays the transcribed text returned by the Whisper API.
+Answers: Displays the answers to detected questions.
+Text Background Option: Users can toggle a checkbox to enable or disable background color for the transcribed text and answers.
+Always on Top: An option to keep the application window always on top of other windows.
+4. File-Based Configuration
+CV and Position Loading: The application reads the user's CV and job position from text files (uploaded_cv_text.txt and position_name.txt), ensuring that the latest information is used for generating answers.
+5. Asynchronous Processing
+Non-Blocking Transcription: The application processes transcription chunks and generates answers on separate threads to ensure smooth and uninterrupted transcription.
 
 ## Setting Up An Environment
 On Windows:
