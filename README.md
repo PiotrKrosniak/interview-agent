@@ -2,8 +2,9 @@
 
 A interview agent build with Flet and OpenAI Whisper.
 [![YouTube](http://i.ytimg.com/vi/Cv_0TmJ9lv0/hqdefault.jpg)](https://www.youtube.com/watch?v=Cv_0TmJ9lv0)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Cv_0TmJ9lv0?si=i_in2TEIsakqXS89" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-https://youtu.be/Cv_0TmJ9lv0
+
 
 This application is designed to transcribe audio input in real-time, detect questions within the transcriptions, and provide answers based on the user's CV and the job position they are applying for. The application leverages OpenAI's GPT-4o-mini model for generating responses and Whisper API for transcriptions.
 
